@@ -4,25 +4,28 @@ import "fmt"
 
 type mergeSort struct{}
 
+// Split int array into two arrays until sorted or has no elements
 func (m mergeSort) Sort(numbers []int, debug bool) []int {
 	// I struggled with recursion so hard, whatever this part finished by ChatGPT
+	// if numbers only has one or none element, it can treat to be sorted
 	if len(numbers) <= 1 {
 		return numbers
 	}
 
+	// split into two parts
 	left := numbers[:len(numbers)/2]
 	right := numbers[len(numbers)/2:]
 
+	// sort both parts
 	sortedLeft := m.Sort(left, debug)
 	sortedRight := m.Sort(right, debug)
 
-	// pretend the left and right are sorted (sub)arrays
-
+	// the left and right are already sorted, now merge them
 	return mergeSortedArrays(sortedLeft, sortedRight, debug)
 }
 
+// Merge two sorted arrays to one sorted array
 func mergeSortedArrays(left []int, right []int, debug bool) []int {
-	// this function will merge two sorted arrays to one sorted array
 	s := make([]int, len(left)+len(right))
 	il, ir, is := 0, 0, 0
 

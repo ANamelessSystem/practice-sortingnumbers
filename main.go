@@ -14,7 +14,7 @@ type Sorter interface {
 }
 
 func main() {
-	var algorithms = []string{"bubble", "quick", "merge", "insertion", "selection", "mysort"}
+	var algorithms = []string{"bubble", "quick", "merge", "insertion", "selection", "heap", "mysort"}
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
@@ -27,6 +27,7 @@ func main() {
 
 	algoPtr := flag.String("a", "", "sorting algorithm to use (e.g., bubble, quick, merge)")
 	randomPtr := flag.Bool("r", false, "run random test with multiple arrays that each contains 1000 elements ")
+	parallelPtr := flag.Bool("p", false, "run tests in parallel using goroutines")
 
 	flag.Parse()
 
@@ -56,6 +57,8 @@ func main() {
 		sorter = mergeSort{}
 	case "selection":
 		sorter = selectionSort{}
+	case "heap":
+		sorter = heapSort{}
 	case "mysort":
 		sorter = mySort{}
 	default:
@@ -64,13 +67,17 @@ func main() {
 	}
 
 	if *randomPtr {
-		randomTest(sorter, false)
+		if *parallelPtr {
+			randomTestParallel(sorter, false)
+		} else {
+			randomTestSequential(sorter, false)
+		}
 	} else {
 		simpleTest(sorter, true)
 	}
 }
 
-func randomTest(sorter Sorter, debug bool) {
+func randomTestSequential(sorter Sorter, debug bool) {
 	timeStart := time.Now()
 	testCases := 1000
 	for i := 0; i < testCases; i++ {
@@ -82,7 +89,34 @@ func randomTest(sorter Sorter, debug bool) {
 			return
 		}
 	}
-	fmt.Printf("All %d test passed. Time elapsed: %v\n", testCases, time.Since(timeStart))
+	fmt.Printf("All %d tests passed. Time elapsed: %v\n", testCases, time.Since(timeStart))
+}
+
+func randomTestParallel(sorter Sorter, debug bool) {
+	testCases := 1000
+	results := make(chan bool, testCases)
+	timeStart := time.Now()
+
+	for i := 0; i < testCases; i++ {
+		go func() {
+			numbers := generateRandomSlice(10000)
+			sortedNumbers := sorter.Sort(numbers, debug)
+			results <- sort.IntsAreSorted(sortedNumbers)
+		}()
+	}
+
+	failed := false
+	for i := 0; i < testCases; i++ {
+		if !<-results {
+			fmt.Printf("Failed in the %d run\n", i)
+			failed = true
+			break
+		}
+	}
+
+	if !failed {
+		fmt.Printf("All %d tests passed. Time elapsed: %v\n", testCases, time.Since(timeStart))
+	}
 }
 
 func simpleTest(sorter Sorter, debug bool) {

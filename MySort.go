@@ -4,6 +4,7 @@ import "fmt"
 
 type mySort struct{}
 
+// my wired sort
 func (m mySort) Sort(numbers []int, debug bool) []int {
 	sortedNumbers := make([]int, len(numbers))
 	for i := 0; i < len(numbers); i++ {

@@ -8,9 +8,8 @@ type bubbleSort struct{}
 func (b bubbleSort) Sort(numbers []int, debug bool) []int {
 	// start from right side to left side
 	// pick two neighboring elements
-	countOperate := 0
 	for {
-		countOperate = 0
+		countOperate := 0
 		for i := len(numbers) - 1; i-1 >= 0; i-- {
 			if numbers[i-1] > numbers[i] {
 				// if the element on the left bigger than the right, swap
